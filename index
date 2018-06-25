@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">	
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <title> Gra w pamięć </title>
+
+	<style>
+	
+	body {
+		background-color: #f2e394;
+	}
+     
+     button {
+     	background-color: #f2ae72;
+     	color:#588c7e;
+     	font-size: 30px;
+     	width:150px;
+     	height:70px;
+        
+        display:inline-block; 
+     }
+      
+      .Start{
+        margin-left: 35%;
+      }
+      
+     .Losuj{
+      width:300px;
+      }
+     
+     .disabled {
+     	background-color: LightGray ;
+     }
+      
+     .Instrukcja{
+       color: #588c7e;
+       font-size:20px;
+      }
+    
+     .Penguins, .Haslo {
+       list-style-type: none;
+       position:relative;       
+      }
+
+      .Haslo {
+      margin-left:25%;
+      }
+      
+      .Penguins li, .Haslo li {
+      display:inline-block;
+      width:150px;
+      height:150px;
+      border-style: solid;
+      border-width: 2px;
+      border-color:  #588c7e;
+      }
+      
+      .Penguins li.disabled{
+      opacity: 0.3;
+      }
+      
+      .ob_haslo{
+        display:none;
+      }
+      
+      .Ruchy{
+       color: #588c7e;
+       font-size: 20px; 
+       text-align:center;
+      }
+       
+    </style>
+  
+    <script>
+	
+      $(document).ready(function() {
+          $('.Start').click(function() {
+              $(this).addClass('disabled');
+              start_gry();
+          })
+      })  
+      
+      $(document).ready(function() {
+          $('.Losuj').click(function(){
+              location.reload();
+          })
+      })
+
+     </script>  
+	 
+</head>
+
+<body>
+
+  <div class="Ruchy"> </br> </div>
+  
+  <?php	
+	
+    $pingwiny = array( 'p2.png', 'p3.png','p4.png', 'p5.png', 'p6.png', 'p7.png','p8.png', 'p9.png', 'p10.png', 'p11.png', 'p12.png', 'p13.png', 'p14.png', 'p15.png', 'p16.png', 'p17.png', 'p18.png', 'p19.png');
+
+    //losowanie obrazkow do zgadniecia
+    
+    for($i=0; $i<18; $i++) $pomieszane[$i] = $pingwiny[$i];
+    shuffle($pomieszane);
+    $haslo=array();
+    for($i=0; $i<4; $i++) $haslo[$i]=$pomieszane[$i];
+ 
+ 
+    echo '<ul class="Haslo"> '; 
+    echo '<li><img id ="h0" class="ob_haslo" src='.$haslo[0].'  /></li>';
+    echo '<li><img id ="h1" class="ob_haslo" src='.$haslo[1].'  /></li>';
+    echo '<li><img id ="h2" class="ob_haslo" src='.$haslo[2].'  /></li>';
+    echo '<li><img id ="h3" class="ob_haslo" src='.$haslo[3].'  /></li>';
+    echo '</ul>';  
+  
+    echo '<ul class= "Penguins">';
+    for($i=0; $i<18; $i++){
+        $nr=$i+2;
+        echo "<li id='p$nr'><img src=$pingwiny[$i]></li>";
+    }
+    echo "</ul>";
+
+
+  ?>
+  
+  <button class="Start"> Start </button>
+  <button class="Losuj"> Wylosuj nowe hasło </button>
+  
+  <div class="Instrukcja" > <br> Po kliknięciu Start pojawią się 4 pingwiny, zapamiętaj je, masz na to niecałe 4 sekundy! Gdy znikną, sprawdź swoją pamięć i spróbuj wybrać te, które przed chwilą się pojawiły (kolejność nie ma znaczenia). Jeśli pomylisz się 4 razy, zanim odgadniesz właściwe obrazki, niestety, przegrałeś! ! </div>
+  
+  <script>
+  
+    let pozostale_ruchy = 4;  
+    let zgadniete = 0;
+  
+    function start_gry(){
+        $('.Start').unbind("click");
+        pozostale_ruchy = 4;
+        zgadniete = 0;
+  
+        //pokazuje obrazki do zapamietania
+        $(".ob_haslo").fadeIn();
+        $(".ob_haslo").fadeOut(4000);
+  
+        pokaz_ruchy();
+        setTimeout(przyciski, 4000); //zabezpieczenie przed wybieraniem obrazkow podczas wyswietlania wylosowanej sekwencji
+        $(".Penguins li").removeClass();
+    }
+  
+  
+    function pokaz_ruchy(){
+        $('.Ruchy').text("Pozostalo prÃ³b:"+pozostale_ruchy);
+    }
+	
+  
+    function przyciski(){
+        let $penguins = $('.Penguins li');
+   
+        $penguins.on('click', function(){
+                        sprawdz($(this));
+                        $(this).addClass('disabled');
+                        });
+    }
+  
+ 
+    function sprawdz(pingwin){
+		pingwin.unbind("click");
+        let klikniety = pingwin.attr('id');
+        let wystapienie = 0;
+    
+        for(let i=0; i<4; i++) { 
+            let a = document.getElementById("h"+i).src ;  
+            if (a.indexOf(klikniety) > -1) {
+				    $("#h"+i).fadeIn();
+                    wystapienie = 1;
+                    zgadniete++;
+            }
+        } 
+    
+        if( wystapienie == 0) {
+			pozostale_ruchy--;
+            pokaz_ruchy(); 
+        }
+      
+        if(zgadniete == 4) wygrana();
+        if(pozostale_ruchy == 0) przegrana(); 
+    }
+	
+    
+    function wygrana(){
+        $(".Penguins li").addClass('disabled');
+	    let czy_nowa = confirm("Wygrales! Chcesz rozpoczac nowa gre?");
+         if (czy_nowa == true) setTimeout(function(){ location.reload(); }, 1500);
+    }
+    
+	
+    function przegrana(){
+		$(".Penguins li").addClass('disabled'); 
+        $(".ob_haslo").fadeIn();
+        let czy_nowa = confirm("Niestety, przegrałeś! Chcesz rozpoczac nowa gre?");    
+         if (czy_nowa == true) setTimeout(function(){location.reload();}, 1200);
+    }
+    
+    
+  </script>
+  
+</body>
+</html>
+
